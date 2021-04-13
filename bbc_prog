@@ -1,0 +1,40 @@
+import urllib.request, urllib.parse, urllib.error
+import ssl
+import csv
+from bs4 import BeautifulSoup
+
+url="https://www.bbc.com/"
+html=urllib.request.urlopen(url)
+soup=BesutifulSoup(html,"html.parser")
+
+filename="Todays_News.csv"
+news=[]
+reels={}
+
+for div_items in soup.findAll('div',attrs={'class':'media block-link'}):
+ reels[div_items.get("data-bbc-title")]=div_items.a.get("href")
+
+for div_items in soup.findAll('div',attrs={'class':'media__content'}):
+ new={}
+ new['News']=div_items.h3.text.strip()
+ try:
+  new['Summary']=div_items.p.text.strip()
+ except:
+  new['Summary']="None"
+ try:
+  link=div_items.h3.a.get("href","None")
+  if link.startswith("htt")!=True:
+   link=str("https://www.bbc.com")+link 
+ except:
+  for key, value in reels.items():
+   if key==new['News']:
+    link=str("https://www.bbc.com")+link+str('")')
+ news.append(new)
+
+with open(filename,'w',newline="") as f:
+ w=csv.DictWriter(f,['News','Summary','Link'])
+ w.writeheader()
+ for n in news:
+  w.writerow(n)
+
+print("All News have been written to File")
